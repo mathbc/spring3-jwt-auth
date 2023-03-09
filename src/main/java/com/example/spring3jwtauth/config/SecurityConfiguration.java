@@ -1,5 +1,6 @@
 package com.example.spring3jwtauth.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,8 +29,18 @@ public class SecurityConfiguration {
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .authenticationProvider(authenticationProvider);
+
+        // Exepction if invalid credentials
+        http.exceptionHandling().authenticationEntryPoint((request, response, e) -> {
+            response.sendError(
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    e.getMessage()
+            );
+        });
+
+        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 }
